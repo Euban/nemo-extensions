@@ -39,6 +39,7 @@ from pymediainfo import MediaInfo
 import PIL.Image
 # for reading pdf
 from pypdf import PdfReader
+import functools
 
 # Import the gettext function and alias it as _
 from gettext import gettext as _
@@ -77,8 +78,6 @@ class FileExtensionInfo():
         self.exif_pixeldimensions = None
         self.exif_rating = None
         self.pixeldimensions = None
-
-
 
 class ColumnExtension(GObject.GObject, Nemo.ColumnProvider, Nemo.InfoProvider, Nemo.NameAndDescProvider):
     def __init__(self):
@@ -127,6 +126,7 @@ class ColumnExtension(GObject.GObject, Nemo.ColumnProvider, Nemo.InfoProvider, N
             Nemo.Column(name="NemoPython::pixeldimensions_column",attribute="pixeldimensions",label=_("Image Size"),description=""),
         )
 
+    @functools.lru_cache()
     def set_file_attributes(self, file, info):
         for attribute in ("title", "album", "artist", "tracknumber",
                           "genre", "date", "bitrate", "framerate", "video_codec", "date_encoded", "pages", "samplerate",
