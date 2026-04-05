@@ -65,6 +65,10 @@ class FileExtensionInfo():
         self.bitrate = None
         self.framerate = None
         self.video_codec = None
+        self.audio_codec = None
+        self.comment = None
+        self.image_width = None
+        self.image_height = None
         self.date_encoded = None
         self.pages = None
         self.samplerate = None
@@ -113,6 +117,10 @@ class ColumnExtension(GObject.GObject, Nemo.ColumnProvider, Nemo.InfoProvider, N
             Nemo.Column(name="NemoPython::bitrate_column",attribute="bitrate",label=_("Bitrate"),description=""),
             Nemo.Column(name="NemoPython::framerate_column",attribute="framerate",label=_("Framerate"),description=""),
             Nemo.Column(name="NemoPython::video_codec_column",attribute="video_codec",label=_("Video Codec"),description=""),
+            Nemo.Column(name="NemoPython::audio_codec_column",attribute="audio_codec",label=_("Audio Codec"),description=""),
+            Nemo.Column(name="NemoPython::comment_column",attribute="comment",label=_("Comment"),description=""),
+            Nemo.Column(name="NemoPython::image_width_column",attribute="image_width",label=_("Image Width"),description=""),
+            Nemo.Column(name="NemoPython::image_height_column",attribute="image_height",label=_("Image Height"),description=""),
             Nemo.Column(name="NemoPython::date_encoded_column",attribute="date_encoded",label=_("Date Encoded"),description=""),
             Nemo.Column(name="NemoPython::pages_column",attribute="pages",label=_("Pages"),description=""),
             Nemo.Column(name="NemoPython::samplerate_column",attribute="samplerate",label=_("Sample Rate"),description=""),
@@ -129,7 +137,7 @@ class ColumnExtension(GObject.GObject, Nemo.ColumnProvider, Nemo.InfoProvider, N
 
     def set_file_attributes(self, file, info):
         for attribute in ("title", "album", "artist", "tracknumber",
-                          "genre", "date", "bitrate", "framerate", "video_codec", "date_encoded", "pages", "samplerate",
+                          "genre", "date", "bitrate", "framerate", "video_codec", "audio_codec", "comment", "image_width", "image_height", "date_encoded", "pages", "samplerate",
                           "length", 'composer', 'description', "exif_datetime_original", "exif_software",
                           "exif_flash", "exif_pixeldimensions", "exif_rating", "pixeldimensions"):
             value = getattr(info, attribute)
@@ -268,7 +276,10 @@ class ColumnExtension(GObject.GObject, Nemo.ColumnProvider, Nemo.InfoProvider, N
             # try read image info directly
             try:
                 im = PIL.Image.open(filename)
-                info.pixeldimensions = str(im.size[0])+'x'+str(im.size[1])
+                info.image_width = str(im.size[0])
+                info.image_height = str(im.size[1])
+                info.pixeldimensions = info.image_width+'x'+info.image_height
+
             except Exception as e:
                 pil_good = False
 
@@ -293,7 +304,14 @@ class ColumnExtension(GObject.GObject, Nemo.ColumnProvider, Nemo.InfoProvider, N
                             info.pixeldimensions = "%dx%d" % (track["width"], track["height"])
                         except:
                             pass
-
+                        try:
+                            info.image_width = str(track["width"])
+                        except:
+                            pass
+                        try:
+                            info.image_height = str(track["height"])
+                        except:
+                            pass
                         try:
                             duration = int(float(track['duration']))
                         except:
@@ -317,6 +335,10 @@ class ColumnExtension(GObject.GObject, Nemo.ColumnProvider, Nemo.InfoProvider, N
                         try:
                             if duration == 0:
                                 duration = int(track['duration'])
+                        except:
+                            pass
+                        try:
+                            info.audio_codec = (track['format'])
                         except:
                             pass
 
@@ -364,6 +386,10 @@ class ColumnExtension(GObject.GObject, Nemo.ColumnProvider, Nemo.InfoProvider, N
                             pass
                         try:
                             info.date_encoded = track['encoded_date']
+                        except:
+                            pass
+                        try:
+                            info.comment = track["comment"]
                         except:
                             pass
 
