@@ -244,11 +244,24 @@ class ColumnExtension(GObject.GObject, Nemo.ColumnProvider, Nemo.InfoProvider, N
             try:
                 with open(filename, 'rb') as mpfile:
                     mpinfo = MP3(mpfile).info
-                    info.bitrate = str(mpinfo.bitrate / 1000) + " Kbps"
+                    #Kb/s matches the format of Mediainfo closer. NVM video streams are Mb/s while non-mpeg audio is kb/s. OCD...
+                    info.bitrate = str(mpinfo.bitrate / 1000) + " Kb/s"
                     info.samplerate = str(mpinfo.sample_rate) + " Hz"
                     # [SabreWolfy] added consistent formatting of times in format hh:mm:ss
                     # [SabreWolfy[ to allow for correct column sorting by length
                     info.length = "%02i:%02i:%02i" % ((int(mpinfo.length/3600)), (int(mpinfo.length/60%60)), (int(mpinfo.length%60)))
+
+                    #If we can open the file and read via MP3()... it must be MPEG Audio, no? 
+                    info.audio_codec = "MPEG Audio"
+                    #See below for "real" implementation
+
+                '''
+                mediainfo = MediaInfo.parse(filename)
+                for trackobj in mediainfo.tracks:
+                    track = trackobj.to_data()
+                    if track["track_type"] == "Audio":
+                        info.audio_codec = (track['format'])
+                '''
             except Exception:
                 mp3_good = False
 
@@ -278,7 +291,7 @@ class ColumnExtension(GObject.GObject, Nemo.ColumnProvider, Nemo.InfoProvider, N
                 im = PIL.Image.open(filename)
                 info.image_width = str(im.size[0])
                 info.image_height = str(im.size[1])
-                info.pixeldimensions = info.image_width+'x'+info.image_height
+                info.pixeldimensions = info.image_width+'x'+info.image_height 
 
             except Exception as e:
                 pil_good = False
